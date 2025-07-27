@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
@@ -6,45 +6,39 @@
   <title>Vermieten – MiFla</title>
   <link rel="stylesheet" href="style.css" />
 </head>
-<body style="font-family: sans-serif; padding: 40px; background-color: #fafafa;">
-  <h1 style="text-align: center;">Was möchtest du vermieten?</h1>
+<body>
+  <header>
+    <h1>MiFla – Objekt vermieten</h1>
+    <p>Stelle hier dein Mietobjekt ein</p>
+  </header>
 
-  <form style="max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-    
-    <!-- Objektname -->
-    <label for="objektname">Name des Mietobjekts:</label><br>
-    <input type="text" id="objektname" name="objektname" placeholder="z. B. Rüttelplatte, Hochdruckreiniger" required><br><br>
+  <main>
+    <form action="#" method="post">
+      <label for="titel">Titel des Objekts:</label><br />
+      <input type="text" id="titel" name="titel" required /><br /><br />
 
-    <!-- Kategorie -->
-    <label for="kategorie">Kategorie:</label><br>
-    <select id="kategorie" name="kategorie" required>
-      <option value="">Bitte wählen</option>
-      <option>Fahrzeuge</option>
-      <option>Baumaschinen</option>
-      <option>Haushalt</option>
-      <option>Werkzeuge</option>
-      <option>Garten</option>
-    </select><br><br>
+      <label for="beschreibung">Beschreibung:</label><br />
+      <textarea id="beschreibung" name="beschreibung" rows="4" required></textarea><br /><br />
 
-    <!-- Beschreibung -->
-    <label for="beschreibung">Beschreibung:</label><br>
-    <textarea id="beschreibung" name="beschreibung" rows="4" placeholder="Kurzbeschreibung deines Objekts..." required></textarea><br><br>
+      <label for="preis">Preis pro Tag (€):</label><br />
+      <input type="number" id="preis" name="preis" required /><br /><br />
 
-    <!-- Preis -->
-    <label for="preis">Preis pro Tag (€):</label><br>
-    <input type="number" id="preis" name="preis" placeholder="z. B. 25" required><br><br>
+      <label for="region">Region:</label><br />
+      <input type="text" id="region" name="region" /><br /><br />
 
-    <!-- Region -->
-    <label for="region">Region / Ort:</label><br>
-    <input type="text" id="region" name="region" placeholder="z. B. Aachen, Köln" required><br><br>
+      <label for="kategorie">Kategorie:</label><br />
+      <select id="kategorie" name="kategorie">
+        <option value="fahrzeuge">Fahrzeuge</option>
+        <option value="maschinen">Maschinen</option>
+        <option value="garten">Garten</option>
+        <option value="sonstiges">Sonstiges</option>
+      </select><br /><br />
 
-    <!-- Kalender kommt später -->
-    <p style="color: gray;">Kalender zur Verfügbarkeit kommt bald 😊</p>
+      <label for="bild">Bild (optional):</label><br />
+      <input type="file" id="bild" name="bild" accept="image/*" /><br /><br />
 
-    <!-- Absenden -->
-    <button type="submit" style="background-color: red; color: white; padding: 10px 20px; border: none; border-radius: 5px;">
-      Objekt einstellen
-    </button>
-  </form>
+      <input type="submit" value="Objekt anbieten" />
+    </form>
+  </main>
 </body>
 </html>
