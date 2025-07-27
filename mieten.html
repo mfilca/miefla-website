@@ -1,54 +1,52 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Mieten – Miefla</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mieten – MiFla</title>
   <link rel="stylesheet" href="style.css" />
 </head>
-<body style="font-family: sans-serif; padding: 40px; background-color: #fdfcfb;">
+<body>
+  <header>
+    <h1>MiFla – Mietangebote entdecken</h1>
+    <p>Finde genau das Mietobjekt, das du brauchst.</p>
+  </header>
 
-  <h1 style="text-align: center;">Was möchtest du mieten?</h1>
-  <form style="max-width: 500px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05);">
+  <main>
+    <form action="#" method="get">
+      <label for="kategorie">Kategorie:</label><br />
+      <select name="kategorie" id="kategorie">
+        <option value="">Alle Kategorien</option>
+        <option value="fahrzeuge">Fahrzeuge</option>
+        <option value="maschinen">Maschinen</option>
+        <option value="garten">Garten</option>
+        <option value="haushalt">Haushalt</option>
+        <option value="sonstiges">Sonstiges</option>
+      </select><br /><br />
 
-    <!-- Kategorie -->
-    <label for="kategorie">Kategorie:</label><br>
-    <select id="kategorie" name="kategorie" required>
-      <option value="">Bitte wählen</option>
-      <option>Werkzeuge</option>
-      <option>Fahrzeuge</option>
-      <option>Haushalt</option>
-      <option>Elektronik</option>
-      <option>Freizeit / Camping</option>
-    </select><br><br>
+      <label for="region">Region / Ort:</label><br />
+      <input type="text" name="region" id="region" placeholder="z. B. Köln, Aachen" /><br /><br />
 
-    <!-- Zweck -->
-    <label for="zweck">Wofür brauchst du es?</label><br>
-    <input type="text" id="zweck" name="zweck" placeholder="z. B. Gartenarbeit, Umzug" required><br><br>
+      <label for="suchwort">Stichwortsuche:</label><br />
+      <input type="text" name="suchwort" id="suchwort" placeholder="z. B. Bohrmaschine" /><br /><br />
 
-    <!-- Größenordnung -->
-    <label for="größe">Größenordnung:</label><br>
-    <select id="größe" name="größe" required>
-      <option value="">Bitte wählen</option>
-      <option>Klein (tragbar)</option>
-      <option>Mittelgroß (z. B. Anhänger)</option>
-      <option>Groß (z. B. Bagger, Maschine)</option>
-    </select><br><br>
+      <button type="submit">Angebote finden</button>
+    </form>
 
-    <!-- Region -->
-    <label for="region">Region / PLZ:</label><br>
-    <input type="text" id="region" name="region" placeholder="z. B. 52146 Würselen" required><br><br>
+    <hr />
 
-    <!-- Suchen-Button -->
-    <button type="submit" style="background-color: #d62828; color: white; padding: 12px 24px; border: none; border-radius: 5px; font-weight: bold; font-size: 1em;">
-      Angebote anzeigen
-    </button>
-  </form>
+    <section id="ergebnisse">
+      <h2>Vorgestellte Mietobjekte</h2>
 
-  <br><br>
-  <div style="text-align: center;">
-    <a href="auswahl.html">⬅ Zurück zur Auswahl</a>
-  </div>
+      <!-- Platzhalter für Angebote -->
+      <div class="mietobjekt">
+        <h3>Transporter</h3>
+        <p>Ab 45 €/Tag · Region: Aachen</p>
+        <a href="objekt.html">Details ansehen</a>
+      </div>
 
+      <!-- Hier können später per JS weitere Ergebnisse geladen werden -->
+    </section>
+  </main>
 </body>
 </html>
