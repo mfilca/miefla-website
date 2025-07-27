@@ -1,44 +1,35 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Vermieten – MiFla</title>
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <header>
-    <h1>MiFla – Objekt vermieten</h1>
-    <p>Stelle hier dein Mietobjekt ein</p>
-  </header>
+<h2>Objekt vermieten</h2>
 
-  <main>
-    <form action="#" method="post">
-      <label for="titel">Titel des Objekts:</label><br />
-      <input type="text" id="titel" name="titel" required /><br /><br />
+<form action="https://formsubmit.co/mikeyflachs@googlemail.com" method="POST" enctype="multipart/form-data">
+  <!-- Spam-Schutz -->
+  <input type="text" name="_honey" style="display:none">
 
-      <label for="beschreibung">Beschreibung:</label><br />
-      <textarea id="beschreibung" name="beschreibung" rows="4" required></textarea><br /><br />
+  <!-- Weiterleitung nach dem Absenden -->
+  <input type="hidden" name="_next" value="https://mfilca.github.io/danke.html">
+  <input type="hidden" name="_captcha" value="false">
 
-      <label for="preis">Preis pro Tag (€):</label><br />
-      <input type="number" id="preis" name="preis" required /><br /><br />
+  <label for="titel">Titel des Objekts:</label><br />
+  <input type="text" id="titel" name="titel" required><br /><br />
 
-      <label for="region">Region:</label><br />
-      <input type="text" id="region" name="region" /><br /><br />
+  <label for="beschreibung">Beschreibung:</label><br />
+  <textarea id="beschreibung" name="beschreibung" rows="4" required></textarea><br /><br />
 
-      <label for="kategorie">Kategorie:</label><br />
-      <select id="kategorie" name="kategorie">
-        <option value="fahrzeuge">Fahrzeuge</option>
-        <option value="maschinen">Maschinen</option>
-        <option value="garten">Garten</option>
-        <option value="sonstiges">Sonstiges</option>
-      </select><br /><br />
+  <label for="preis">Preis pro Tag (€):</label><br />
+  <input type="number" id="preis" name="preis" required><br /><br />
 
-      <label for="bild">Bild (optional):</label><br />
-      <input type="file" id="bild" name="bild" accept="image/*" /><br /><br />
+  <label for="region">Region:</label><br />
+  <input type="text" id="region" name="region"><br /><br />
 
-      <input type="submit" value="Objekt anbieten" />
-    </form>
-  </main>
-</body>
-</html>
+  <label for="kategorie">Kategorie:</label><br />
+  <select id="kategorie" name="kategorie">
+    <option value="fahrzeuge">Fahrzeuge</option>
+    <option value="maschinen">Maschinen</option>
+    <option value="garten">Garten</option>
+    <option value="sonstiges">Sonstiges</option>
+  </select><br /><br />
+
+  <label for="bild">Bild (optional):</label><br />
+  <input type="file" id="bild" name="bild" accept="image/*"><br /><br />
+
+  <input type="submit" value="Objekt anbieten">
+</form>
