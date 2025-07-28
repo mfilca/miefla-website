@@ -1,17 +1,60 @@
-
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <title>miefla – mieten mit Flair</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>MiFla – Mieten mit Flair</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .hero {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+      padding: 0 20px;
+    }
+
+    .hero h1 {
+      font-size: 48px;
+      margin-bottom: 20px;
+    }
+
+    .hero p {
+      font-size: 20px;
+      margin-bottom: 40px;
+      color: #ccc;
+    }
+
+    .hero a {
+      text-decoration: none;
+    }
+
+    .hero button {
+      background-color: #e50914;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .hero button:hover {
+      background-color: #c40812;
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <h1>miefla</h1>
-        <p>mieten mit Flair – einfach. direkt. fair.</p>
-        <a href="mieten.html" class="button">Jetzt Mieten</a>
-        <a href="vermieten.html" class="button">Jetzt Vermieten</a>
-    </header>
+
+  <div class="hero">
+    <h1>MiFla – Mieten mit Flair</h1>
+    <p>Finde oder vermiete Dinge ganz einfach in deiner Nähe.</p>
+    <a href="auswahl.html">
+      <button>Jetzt entdecken</button>
+    </a>
+  </div>
+
 </body>
 </html>
