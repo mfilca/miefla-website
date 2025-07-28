@@ -1,52 +1,40 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mieten – MiFla</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>MiFla – Mieten</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>MiFla – Mietangebote entdecken</h1>
-    <p>Finde genau das Mietobjekt, das du brauchst.</p>
-  </header>
 
-  <main>
-    <form action="#" method="get">
-      <label for="kategorie">Kategorie:</label><br />
-      <select name="kategorie" id="kategorie">
-        <option value="">Alle Kategorien</option>
-        <option value="fahrzeuge">Fahrzeuge</option>
-        <option value="maschinen">Maschinen</option>
-        <option value="garten">Garten</option>
-        <option value="haushalt">Haushalt</option>
-        <option value="sonstiges">Sonstiges</option>
-      </select><br /><br />
+  <form action="mieten_senden.php" method="POST" enctype="multipart/form-data">
+    <h2>Objekt mieten</h2>
 
-      <label for="region">Region / Ort:</label><br />
-      <input type="text" name="region" id="region" placeholder="z. B. Köln, Aachen" /><br /><br />
+    <label for="kategorie">Kategorie *</label>
+    <select name="kategorie" id="kategorie" required>
+      <option value="">Bitte wählen</option>
+      <option value="werkzeug">Werkzeug</option>
+      <option value="fahrzeug">Fahrzeug</option>
+      <option value="technik">Technik</option>
+    </select>
 
-      <label for="suchwort">Stichwortsuche:</label><br />
-      <input type="text" name="suchwort" id="suchwort" placeholder="z. B. Bohrmaschine" /><br /><br />
+    <label for="zweck">Anwendungszweck *</label>
+    <input type="text" name="zweck" id="zweck" required>
 
-      <button type="submit">Angebote finden</button>
-    </form>
+    <label for="größe">Größe / Leistungsbereich *</label>
+    <input type="text" name="größe" id="größe" required>
 
-    <hr />
+    <label for="region">Region *</label>
+    <input type="text" name="region" id="region" required>
 
-    <section id="ergebnisse">
-      <h2>Vorgestellte Mietobjekte</h2>
+    <label for="zeitraum">Gewünschter Zeitraum *</label>
+    <input type="text" name="zeitraum" id="zeitraum" required>
 
-      <!-- Platzhalter für Angebote -->
-      <div class="mietobjekt">
-        <h3>Transporter</h3>
-        <p>Ab 45 €/Tag · Region: Aachen</p>
-        <a href="objekt.html">Details ansehen</a>
-      </div>
+    <label for="bild">Optional: Foto hochladen</label>
+    <input type="file" name="bild" id="bild" accept="image/*">
 
-      <!-- Hier können später per JS weitere Ergebnisse geladen werden -->
-    </section>
-  </main>
+    <input type="submit" value="Anfrage senden">
+  </form>
+
 </body>
 </html>
