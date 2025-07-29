@@ -1,0 +1,41 @@
+# Verbindung zur SQLite-Datenbank herstellen
+conn = sqlite3.connect("objekte.db")
+c = conn.cursor()
+
+# Tabelle erstellen
+c.execute("""
+CREATE TABLE IF NOT EXISTS objekte (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    titel TEXT,
+    beschreibung TEXT,
+    preis REAL,
+    kaution REAL,
+    region TEXT,
+    kategorie TEXT,
+    unterkategorie TEXT,
+    zweck TEXT,
+    anforderungen TEXT,
+    von TEXT,
+    bis TEXT,
+    reserviert INTEGER DEFAULT 0,
+    zusatzoptionen TEXT
+)
+""")
+
+# Beispielobjekte einfügen
+daten = [
+    ("Bohrmaschine", "Leistungsstark für Beton & Mauerwerk", 15, 50, "Aachen", "werkzeug", "Bohrmaschine", "Renovierung", "750W, SDS Plus", "2025-08-01", "2025-08-10", 0, "Transportkoffer, Bits"),
+    ("Transporter", "Sprinter mit Ladefläche 3.2m", 55, 150, "Köln", "fahrzeug", "Transporter", "Umzug", "3.5t, Diesel", "2025-08-05", "2025-08-20", 0, "Spanngurte, Sackkarre"),
+    ("Minibagger", "1.8t Bagger mit Gummiketten", 90, 300, "Würselen", "bau", "Minibagger", "Gartenarbeit", "Tiefe bis 2.2m", "2025-08-15", "2025-08-25", 1, "Schaufel, Ramme")
+]
+
+c.executemany("""
+INSERT INTO objekte (
+    titel, beschreibung, preis, kaution, region, kategorie, unterkategorie,
+    zweck, anforderungen, von, bis, reserviert, zusatzoptionen
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+""", daten)
+
+# Speichern und schließen
+conn.commit()
+conn.close()
