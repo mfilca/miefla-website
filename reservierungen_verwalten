@@ -1,0 +1,89 @@
+<?php
+$db = new SQLite3('objekte.db');
+
+// Alle Reservierungen holen (sortiert nach Zeit)
+$reservierungen = $db->query("
+    SELECT r.*, v.titel 
+    FROM reservierungen r
+    LEFT JOIN vermietungen v ON r.objekt_id = v.id
+    ORDER BY r.erstellt_am DESC
+");
+?>
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Reservierungen verwalten</title>
+    <style>
+        body {
+            background-color: #111;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #444;
+            text-align: left;
+        }
+        th {
+            background-color: #222;
+        }
+        .aktion button {
+            padding: 6px 12px;
+            margin-right: 5px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .akzeptieren { background-color: #28a745; color: white; }
+        .ablehnen { background-color: #dc3545; color: white; }
+    </style>
+</head>
+<body>
+
+<h1>📋 Reservierungsverwaltung</h1>
+
+<table>
+    <tr>
+        <th>Objekt</th>
+        <th>Zeitraum</th>
+        <th>Mieter</th>
+        <th>Status</th>
+        <th>Aktionen</th>
+    </tr>
+
+    <?php while ($r = $reservierungen->fetchArray(SQLITE3_ASSOC)): ?>
+    <tr>
+        <td><?= htmlspecialchars($r['titel']) ?></td>
+        <td><?= $r['von'] ?> bis <?= $r['bis'] ?></td>
+        <td><?= htmlspecialchars($r['mieter']) ?></td>
+        <td><?= ucfirst($r['status']) ?></td>
+        <td class="aktion">
+            <?php if ($r['status'] === 'ausstehend'): ?>
+                <form method="post" action="reservierung_status.php" style="display:inline;">
+                    <input type="hidden" name="id" value="<?= $r['id'] ?>">
+                    <input type="hidden" name="status" value="bestätigt">
+                    <button class="akzeptieren">✅ Bestätigen</button>
+                </form>
+                <form method="post" action="reservierung_status.php" style="display:inline;">
+                    <input type="hidden" name="id" value="<?= $r['id'] ?>">
+                    <input type="hidden" name="status" value="storniert">
+                    <button class="ablehnen">❌ Ablehnen</button>
+                </form>
+            <?php else: ?>
+                <em>Keine Aktion</em>
+            <?php endif; ?>
+        </td>
+    </tr>
+    <?php endwhile; ?>
+</table>
+
+</body>
+</html>
