@@ -36,72 +36,86 @@ $ergebnisse = $db->query("SELECT * FROM vermietungen");
             font-weight: bold;
             color: #00ff88;
         }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #e60023;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #ff0033;
+        }
     </style>
 </head>
 <body>
 
-<h1>🔧 Mietangebote auf MiFla</h1>
+<h1>Mietangebote auf MiFla</h1>
 
 <?php while ($objekt = $ergebnisse->fetchArray(SQLITE3_ASSOC)): ?>
-    <div class="objekt">
-        <h2><?= htmlspecialchars($objekt['titel']) ?></h2>
-        <p><strong>Kategorie:</strong> <?= htmlspecialchars($objekt['kategorie']) ?> – <?= htmlspecialchars($objekt['unterkategorie']) ?></p>
-        <p><strong>Beschreibung:</strong> <?= nl2br(htmlspecialchars($objekt['beschreibung'])) ?></p>
-        <p><strong>Region:</strong> <?= htmlspecialchars($objekt['region']) ?></p>
-        <p><strong>Verfügbar von:</strong> <?= $objekt['verfuegbar_von'] ?> bis <?= $objekt['verfuegbar_bis'] ?></p>
-        <p><strong>Preis:</strong> <?= number_format($objekt['preis'], 2) ?> €</p>
-        <p><strong>Kaution:</strong> <?= number_format($objekt['kaution'], 2) ?> €</p>
+<div class="objekt">
+    <h2><?= htmlspecialchars($objekt['titel']) ?></h2>
+    <p><strong>Kategorie:</strong> <?= htmlspecialchars($objekt['kategorie']) ?></p>
+    <p><strong>Unterkategorie:</strong> <?= htmlspecialchars($objekt['unterkategorie']) ?></p>
+    <p><strong>Beschreibung:</strong> <?= nl2br(htmlspecialchars($objekt['beschreibung'])) ?></p>
+    <p><strong>Region:</strong> <?= htmlspecialchars($objekt['region']) ?></p>
+    <p><strong>Verfügbar von:</strong> <?= $objekt['von'] ?> <strong>bis:</strong> <?= $objekt['bis'] ?></p>
+    <p><strong>Preis pro Tag:</strong> <?= number_format($objekt['preis'], 2) ?> €</p>
+    <p><strong>Kaution:</strong> <?= number_format($objekt['kaution'], 2) ?> €</p>
 
-        <div class="bilder">
+    <div class="bilder">
+        <?php
+        $bilder = json_decode($objekt['bilder'], true) ?? [];
+        foreach ($bilder as $bild) {
+            echo "<img src='$bild' alt='Bild'>";
+        }
+        ?>
+    </div>
+
+    <form method="post" action="anfrage_senden.php">
+        <input type="hidden" name="objekt_id" value="<?= $objekt['id'] ?>">
+
+        <div class="zusatz">
+            <p><strong>Optional zubuchbare Zusatzoptionen:</strong></p>
             <?php
-            $bilder = json_decode($objekt['bilder'], true);
-            foreach ($bilder as $bild) {
-                echo "<img src='$bild' alt='Bild'>";
-            }
-            ?>
+            $zusatzoptionen = json_decode($objekt['zusatzoptionen'], true) ?? [];
+            foreach ($zusatzoptionen as $index => $option):
+                $preis = number_format($option['preis'], 2);
+                ?>
+                <label>
+                    <input type="checkbox" name="zusatz[]" value="<?= $index ?>" data-preis="<?= $option['preis'] ?>">
+                    <?= htmlspecialchars($option['beschreibung']) ?> (+<?= $preis ?> €)
+                </label>
+            <?php endforeach; ?>
         </div>
 
-        <form method="post" action="anfrage_senden.php">
-            <input type="hidden" name="objekt_id" value="<?= $objekt['id'] ?>">
+        <p class="summe">Gesamtpreis: <span class="gesamt"><?= number_format($objekt['preis'] + 2, 2) ?></span> € (inkl. 2 € Plattformgebühr)</p>
 
-            <div class="zusatz">
-                <p><strong>Optional zubuchbare Zusatzoptionen:</strong></p>
-                <?php
-                $zusatzoptionen = json_decode($objekt['zusatzoptionen'], true);
-                foreach ($zusatzoptionen as $index => $option):
-                ?>
-                    <label>
-                        <input type="checkbox" name="zusatz[]" value="<?= $index ?>" data-preis="<?= $option['preis'] ?>" data-kaution="<?= $option['kaution'] ?>">
-                        <?= htmlspecialchars($option['beschreibung']) ?> (+<?= number_format($option['preis'], 2) ?> €, Kaution: <?= number_format($option['kaution'], 2) ?> €)
-                    </label>
-                <?php endforeach; ?>
-            </div>
-
-            <p class="summe">Gesamtpreis: <span class="gesamt"><?= number_format($objekt['preis'] + 2, 2) ?></span> € (inkl. 2 € Plattformgebühr)</p>
-
-            <button type="submit">Anfrage stellen</button>
-        </form>
-    </div>
+        <button type="submit">Anfrage stellen</button>
+    </form>
+</div>
 <?php endwhile; ?>
 
 <script>
-    document.querySelectorAll('.objekt').forEach(objekt => {
-        const checkboxes = objekt.querySelectorAll('input[type="checkbox"]');
-        const ausgabe = objekt.querySelector('.gesamt');
-        const grundpreis = parseFloat(ausgabe.textContent.replace(',', '.'));
+document.querySelectorAll('.objekt').forEach(objekt => {
+    const checkboxes = objekt.querySelectorAll('input[type="checkbox"]');
+    const ausgabe = objekt.querySelector('.gesamt');
+    const grundpreis = parseFloat(ausgabe.textContent.replace(',', '.')) || 0;
 
-        checkboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', () => {
-                let summe = grundpreis;
-                checkboxes.forEach(cb => {
-                    if (cb.checked) {
-                        summe += parseFloat(cb.dataset.preis) || 0;
-                    }
-                });
-                ausgabe.textContent = summe.toFixed(2).replace('.', ',');
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', () => {
+            let summe = grundpreis;
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    summe += parseFloat(cb.dataset.preis) || 0;
+                }
             });
+            ausgabe.textContent = summe.toFixed(2).replace('.', ',');
         });
     });
+});
 </script>
 
 </body>
