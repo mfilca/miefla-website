@@ -1,5 +1,5 @@
 <?php
-// Verbindung zur neuen Vermietungsdatenbank
+// Verbindung zur SQLite-Datenbank
 $db = new SQLite3('mifla_vermietungen.db');
 
 // Upload-Verzeichnis
@@ -8,63 +8,62 @@ if (!file_exists($upload_dir)) {
     mkdir($upload_dir, 0777, true);
 }
 
-// Bilder verarbeiten (erlaube min. 3)
-$bildpfade = [];
-if (isset($_FILES['bilder']) && count($_FILES['bilder']['name']) >= 3) {
-    foreach ($_FILES['bilder']['tmp_name'] as $index => $tmp_name) {
-        if ($_FILES['bilder']['error'][$index] === UPLOAD_ERR_OK) {
-            $name = basename($_FILES['bilder']['name'][$index]);
-            $ziel = $upload_dir . time() . "_" . $index . "_" . $name;
-            move_uploaded_file($tmp_name, $ziel);
-            $bildpfade[] = $ziel;
-        }
+// Bild verarbeiten
+$bildpfad = "";
+if (isset($_FILES['bild']) && $_FILES['bild']['error'] === UPLOAD_ERR_OK) {
+    $tmp_name = $_FILES['bild']['tmp_name'];
+    $name = basename($_FILES['bild']['name']);
+    $zielpfad = $upload_dir . time() . "_" . $name;
+
+    if (move_uploaded_file($tmp_name, $zielpfad)) {
+        $bildpfad = $zielpfad;
     }
-} else {
-    die("<h2 style='color:red;'>Bitte mindestens 3 Bilder hochladen!</h2>");
 }
 
-// Formulardaten
-$kategorie      = htmlspecialchars($_POST['kategorie'] ?? '');
+// Formulardaten einlesen
+$kategorie = htmlspecialchars($_POST['kategorie'] ?? '');
 $unterkategorie = htmlspecialchars($_POST['unterkategorie'] ?? '');
-$beschreibung   = htmlspecialchars($_POST['beschreibung'] ?? '');
-$region         = htmlspecialchars($_POST['region'] ?? '');
-$preis          = floatval($_POST['preis'] ?? 0);
-$kaution        = floatval($_POST['kaution'] ?? 0);
+$beschreibung = htmlspecialchars($_POST['beschreibung'] ?? '');
+$region = htmlspecialchars($_POST['region'] ?? '');
+$zeitraum = htmlspecialchars($_POST['zeitraum'] ?? '');
+$preis = htmlspecialchars($_POST['preis'] ?? '');
+$kaution = htmlspecialchars($_POST['kaution'] ?? '');
+$zusatzoptionen = isset($_POST['zusatzoptionen']) ? json_encode($_POST['zusatzoptionen']) : '[]';
 
-// Zusatzoptionen verarbeiten (als JSON speichern)
-$zusatzoptionen = [];
-if (isset($_POST['zusatz_option'])) {
-    foreach ($_POST['zusatz_option'] as $i => $opt) {
-        $zusatzoptionen[] = [
-            'text' => htmlspecialchars($opt),
-            'preis' => floatval($_POST['zusatz_preis'][$i] ?? 0),
-            'kaution' => floatval($_POST['zusatz_kaution'][$i] ?? 0)
-        ];
-    }
-}
-$zusatzoptionen_json = json_encode($zusatzoptionen);
-
-// Bildpfade als JSON
-$bilder_json = json_encode($bildpfade);
-
-// In DB einfügen
-$stmt = $db->prepare("INSERT INTO vermietungen (kategorie, unterkategorie, beschreibung, region, preis, kaution, bild, zusatzoptionen)
-VALUES (:kat, :ukat, :beschr, :reg, :preis, :kaution, :bild, :zusatz)");
-$stmt->bindValue(':kat', $kategorie);
-$stmt->bindValue(':ukat', $unterkategorie);
-$stmt->bindValue(':beschr', $beschreibung);
-$stmt->bindValue(':reg', $region);
-$stmt->bindValue(':preis', $preis);
-$stmt->bindValue(':kaution', $kaution);
-$stmt->bindValue(':bild', $bilder_json);
-$stmt->bindValue(':zusatz', $zusatzoptionen_json);
-
+// In Datenbank speichern
+$stmt = $db->prepare('INSERT INTO vermietungen (kategorie, unterkategorie, beschreibung, region, zeitraum, preis, kaution, zusatzoptionen, bild) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
+$stmt->bindValue(1, $kategorie);
+$stmt->bindValue(2, $unterkategorie);
+$stmt->bindValue(3, $beschreibung);
+$stmt->bindValue(4, $region);
+$stmt->bindValue(5, $zeitraum);
+$stmt->bindValue(6, $preis);
+$stmt->bindValue(7, $kaution);
+$stmt->bindValue(8, $zusatzoptionen);
+$stmt->bindValue(9, $bildpfad);
 $result = $stmt->execute();
 
-// Erfolg oder Fehler anzeigen
+// Wenn erfolgreich → JSON-Datei schreiben
 if ($result) {
-    echo "<h2 style='color:lime;'>✅ Objekt erfolgreich gespeichert!</h2>";
+    $lastId = $db->lastInsertRowID();
+    $daten = [
+        'id' => $lastId,
+        'kategorie' => $kategorie,
+        'unterkategorie' => $unterkategorie,
+        'beschreibung' => $beschreibung,
+        'region' => $region,
+        'zeitraum' => $zeitraum,
+        'preis' => $preis,
+        'kaution' => $kaution,
+        'zusatzoptionen' => json_decode($zusatzoptionen, true),
+        'bild' => $bildpfad
+    ];
+
+    $jsonPfad = __DIR__ . "/json/objekt_$lastId.json";
+    file_put_contents($jsonPfad, json_encode($daten, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+
+    echo "<h2 style='color:lime;'>Dein Objekt wurde gespeichert und exportiert.</h2>";
 } else {
-    echo "<h2 style='color:red;'>❌ Fehler beim Speichern.</h2>";
+    echo "<h2 style='color:red;'>Fehler beim Speichern.</h2>";
 }
 ?>
