@@ -10,8 +10,8 @@
   <form action="mieten_senden.php" method="POST" enctype="multipart/form-data" style="max-width: 600px; margin: 50px auto;">
     <h2>Objekt mieten</h2>
 
-    <label for="kategorie">Kategorie *</label>
-    <select name="kategorie" id="kategorie" required onchange="zeigeUntermenue(this.value)">
+    <label for="kategorie">Kategorie (optional)</label>
+    <select name="kategorie" id="kategorie" onchange="zeigeUntermenue(this.value)">
       <option value="">Bitte wählen</option>
       <option value="werkzeug">Werkzeug</option>
       <option value="fahrzeug">Fahrzeug</option>
@@ -24,8 +24,8 @@
 
     <div id="untermenue" style="margin-top: 10px;"></div>
 
-    <label for="zweck">Wofür brauchst du es? *</label>
-    <input type="text" name="zweck" id="zweck" required placeholder="z. B. Renovierung, Umzug, Gartenarbeit">
+    <label for="zweck">Wofür brauchst du es? (optional)</label>
+    <input type="text" name="zweck" id="zweck" placeholder="z. B. Renovierung, Umzug, Gartenarbeit">
 
     <label for="größe">Technische Anforderungen (optional)</label>
     <input type="text" name="größe" id="größe" placeholder="z. B. PS, Maße, Stromanschluss">
@@ -42,8 +42,11 @@
       <option value="100">100 km</option>
     </select>
 
-    <label for="zeitraum">Gewünschter Zeitraum *</label>
-    <input type="date" name="zeitraum" id="zeitraum" required>
+    <label for="zeitraum_von">Zeitraum von (optional)</label>
+    <input type="date" name="zeitraum_von" id="zeitraum_von">
+
+    <label for="zeitraum_bis">Zeitraum bis (optional)</label>
+    <input type="date" name="zeitraum_bis" id="zeitraum_bis">
 
     <input type="submit" value="Mietangebote entdecken">
   </form>
@@ -51,7 +54,6 @@
   <script>
     function zeigeUntermenue(kategorie) {
       let html = '';
-
       if (kategorie === 'werkzeug') {
         html = `
           <label for="unterkategorie">Werkzeugtyp (optional)</label>
@@ -61,7 +63,7 @@
             <option value="schleifer">Schleifer</option>
             <option value="sägen">Sägen</option>
             <option value="akkuschrauber">Akkuschrauber</option>
-            <option value="stromgenerator">Stromgenerator</option>
+            <option value="generator">Stromgenerator</option>
           </select>`;
       } else if (kategorie === 'fahrzeug') {
         html = `
@@ -70,7 +72,6 @@
             <option value="">-- optional --</option>
             <option value="transporter">Transporter</option>
             <option value="anhänger">Anhänger</option>
-            <option value="radlader">Radlader</option>
             <option value="quad">Quad</option>
             <option value="wohnmobil">Wohnmobil</option>
           </select>`;
@@ -87,26 +88,23 @@
           </select>`;
       } else if (kategorie === 'garten') {
         html = `
-          <label for="unterkategorie">Gartengeräte (optional)</label>
+          <label for="unterkategorie">Gartengerät (optional)</label>
           <select name="unterkategorie" id="unterkategorie">
             <option value="">-- optional --</option>
             <option value="rasenmäher">Rasenmäher</option>
             <option value="heckenschere">Heckenschere</option>
             <option value="häcksler">Häcksler</option>
-            <option value="hochdruckreiniger">Hochdruckreiniger</option>
           </select>`;
       } else if (kategorie === 'veranstaltung') {
         html = `
-          <label for="unterkategorie">Event-Ausstattung (optional)</label>
+          <label for="unterkategorie">Eventausstattung (optional)</label>
           <select name="unterkategorie" id="unterkategorie">
             <option value="">-- optional --</option>
             <option value="partyzelte">Partyzelte</option>
-            <option value="bierzeltgarnitur">Bierzeltgarnitur</option>
-            <option value="lichtanlage">Lichtanlage</option>
+            <option value="licht">Lichtanlage</option>
             <option value="bar">Mobile Bar</option>
           </select>`;
       }
-
       document.getElementById('untermenue').innerHTML = html;
     }
   </script>
