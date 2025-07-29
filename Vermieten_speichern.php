@@ -1,79 +1,70 @@
 <?php
-session_start();
+// Verbindung zur neuen Vermietungsdatenbank
+$db = new SQLite3('mifla_vermietungen.db');
 
-// Verbindung zur SQLite-Datenbank
-$db = new SQLite3('objekte.db');
-
-// Pflichtfelder prüfen
-if (
-    empty($_POST['titel']) || empty($_POST['kategorie']) || empty($_POST['unterkategorie']) ||
-    empty($_POST['beschreibung']) || empty($_POST['preis']) || empty($_POST['kaution']) ||
-    empty($_POST['von']) || empty($_POST['bis']) || empty($_POST['region'])
-) {
-    die("❌ Bitte fülle alle Pflichtfelder aus.");
+// Upload-Verzeichnis
+$upload_dir = 'uploads/';
+if (!file_exists($upload_dir)) {
+    mkdir($upload_dir, 0777, true);
 }
 
-// Bilder prüfen
-if (!isset($_FILES['bilder']) || count($_FILES['bilder']['name']) < 3) {
-    die("❌ Bitte mindestens 3 Bilder hochladen.");
+// Bilder verarbeiten (erlaube min. 3)
+$bildpfade = [];
+if (isset($_FILES['bilder']) && count($_FILES['bilder']['name']) >= 3) {
+    foreach ($_FILES['bilder']['tmp_name'] as $index => $tmp_name) {
+        if ($_FILES['bilder']['error'][$index] === UPLOAD_ERR_OK) {
+            $name = basename($_FILES['bilder']['name'][$index]);
+            $ziel = $upload_dir . time() . "_" . $index . "_" . $name;
+            move_uploaded_file($tmp_name, $ziel);
+            $bildpfade[] = $ziel;
+        }
+    }
+} else {
+    die("<h2 style='color:red;'>Bitte mindestens 3 Bilder hochladen!</h2>");
 }
 
-// Eingaben speichern
-$titel = htmlspecialchars($_POST['titel']);
-$kategorie = htmlspecialchars($_POST['kategorie']);
-$unterkategorie = htmlspecialchars($_POST['unterkategorie']);
-$beschreibung = htmlspecialchars($_POST['beschreibung']);
-$preis = floatval($_POST['preis']);
-$kaution = floatval($_POST['kaution']);
-$von = $_POST['von'];
-$bis = $_POST['bis'];
-$region = htmlspecialchars($_POST['region']);
+// Formulardaten
+$kategorie      = htmlspecialchars($_POST['kategorie'] ?? '');
+$unterkategorie = htmlspecialchars($_POST['unterkategorie'] ?? '');
+$beschreibung   = htmlspecialchars($_POST['beschreibung'] ?? '');
+$region         = htmlspecialchars($_POST['region'] ?? '');
+$preis          = floatval($_POST['preis'] ?? 0);
+$kaution        = floatval($_POST['kaution'] ?? 0);
 
-// Mietobjekt in Datenbank speichern
-$stmt = $db->prepare("
-    INSERT INTO objekte (titel, kategorie, unterkategorie, beschreibung, preis, kaution, von, bis, region, reserviert)
-    VALUES (:titel, :kat, :ukat, :beschr, :preis, :kaution, :von, :bis, :region, 0)
-");
-$stmt->bindValue(':titel', $titel);
+// Zusatzoptionen verarbeiten (als JSON speichern)
+$zusatzoptionen = [];
+if (isset($_POST['zusatz_option'])) {
+    foreach ($_POST['zusatz_option'] as $i => $opt) {
+        $zusatzoptionen[] = [
+            'text' => htmlspecialchars($opt),
+            'preis' => floatval($_POST['zusatz_preis'][$i] ?? 0),
+            'kaution' => floatval($_POST['zusatz_kaution'][$i] ?? 0)
+        ];
+    }
+}
+$zusatzoptionen_json = json_encode($zusatzoptionen);
+
+// Bildpfade als JSON
+$bilder_json = json_encode($bildpfade);
+
+// In DB einfügen
+$stmt = $db->prepare("INSERT INTO vermietungen (kategorie, unterkategorie, beschreibung, region, preis, kaution, bild, zusatzoptionen)
+VALUES (:kat, :ukat, :beschr, :reg, :preis, :kaution, :bild, :zusatz)");
 $stmt->bindValue(':kat', $kategorie);
 $stmt->bindValue(':ukat', $unterkategorie);
 $stmt->bindValue(':beschr', $beschreibung);
+$stmt->bindValue(':reg', $region);
 $stmt->bindValue(':preis', $preis);
 $stmt->bindValue(':kaution', $kaution);
-$stmt->bindValue(':von', $von);
-$stmt->bindValue(':bis', $bis);
-$stmt->bindValue(':region', $region);
-$stmt->execute();
+$stmt->bindValue(':bild', $bilder_json);
+$stmt->bindValue(':zusatz', $zusatzoptionen_json);
 
-$objekt_id = $db->lastInsertRowID();
+$result = $stmt->execute();
 
-// Bilder speichern (nur Pfade in Datenbank – Speicherort z. B. „uploads/“)
-mkdir("uploads/$objekt_id", 0777, true);
-foreach ($_FILES['bilder']['tmp_name'] as $index => $tmpPath) {
-    $name = basename($_FILES['bilder']['name'][$index]);
-    $ziel = "uploads/$objekt_id/" . time() . "_$name";
-    move_uploaded_file($tmpPath, $ziel);
-    $db->exec("INSERT INTO bilder (objekt_id, pfad) VALUES ($objekt_id, '$ziel')");
+// Erfolg oder Fehler anzeigen
+if ($result) {
+    echo "<h2 style='color:lime;'>✅ Objekt erfolgreich gespeichert!</h2>";
+} else {
+    echo "<h2 style='color:red;'>❌ Fehler beim Speichern.</h2>";
 }
-
-// Zusatzoptionen speichern (falls vorhanden)
-if (isset($_POST['zusatz_beschreibung'])) {
-    $beschreibungen = $_POST['zusatz_beschreibung'];
-    $preise = $_POST['zusatz_preis'];
-    $kautionen = $_POST['zusatz_kaution'];
-
-    for ($i = 0; $i < count($beschreibungen); $i++) {
-        $bez = htmlspecialchars($beschreibungen[$i]);
-        $zpreis = floatval($preise[$i]);
-        $zkaution = floatval($kautionen[$i]);
-
-        $db->exec("
-            INSERT INTO zusatzoptionen (objekt_id, beschreibung, preis, kaution)
-            VALUES ($objekt_id, '$bez', $zpreis, $zkaution)
-        ");
-    }
-}
-
-echo "<h2 style='color:lime;'>✅ Objekt erfolgreich eingestellt!</h2>";
-echo "<a href='index.html' style='color:white;'>Zurück zur Startseite</a>";
 ?>
