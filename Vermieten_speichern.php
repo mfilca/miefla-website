@@ -1,73 +1,48 @@
 <?php
-$db = new SQLite3('mifla_vermietungen.db');
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+  $db = new SQLite3('objekte.db');
 
-$upload_dir = "uploads/";
-if (!file_exists($upload_dir)) {
-    mkdir($upload_dir, 0777, true);
+  // Felder aus dem Formular
+  $titel = $_POST['titel'] ?? '';
+  $beschreibung = $_POST['beschreibung'] ?? '';
+  $preis = floatval($_POST['preis'] ?? 0);
+  $kaution = floatval($_POST['kaution'] ?? 0);
+  $region = $_POST['region'] ?? '';
+  $kategorie = $_POST['kategorie'] ?? '';
+  $unterkategorie = $_POST['unterkategorie'] ?? '';
+  $zweck = $_POST['zweck'] ?? '';
+  $anforderungen = $_POST['anforderungen'] ?? '';
+  $von = $_POST['von'] ?? '';
+  $bis = $_POST['bis'] ?? '';
+  $zusatzoptionen = $_POST['zusatzoptionen'] ?? '';
+
+  // Speichern in DB
+  $stmt = $db->prepare("INSERT INTO objekte (
+    titel, beschreibung, preis, kaution, region, kategorie, unterkategorie,
+    zweck, anforderungen, von, bis, reserviert, zusatzoptionen
+  ) VALUES (
+    :titel, :beschreibung, :preis, :kaution, :region, :kategorie, :unterkategorie,
+    :zweck, :anforderungen, :von, :bis, 0, :zusatzoptionen
+  )");
+
+  $stmt->bindValue(':titel', $titel, SQLITE3_TEXT);
+  $stmt->bindValue(':beschreibung', $beschreibung, SQLITE3_TEXT);
+  $stmt->bindValue(':preis', $preis);
+  $stmt->bindValue(':kaution', $kaution);
+  $stmt->bindValue(':region', $region, SQLITE3_TEXT);
+  $stmt->bindValue(':kategorie', $kategorie, SQLITE3_TEXT);
+  $stmt->bindValue(':unterkategorie', $unterkategorie, SQLITE3_TEXT);
+  $stmt->bindValue(':zweck', $zweck, SQLITE3_TEXT);
+  $stmt->bindValue(':anforderungen', $anforderungen, SQLITE3_TEXT);
+  $stmt->bindValue(':von', $von, SQLITE3_TEXT);
+  $stmt->bindValue(':bis', $bis, SQLITE3_TEXT);
+  $stmt->bindValue(':zusatzoptionen', $zusatzoptionen, SQLITE3_TEXT);
+
+  $stmt->execute();
+
+  echo "<h2 style='color:lime;font-family:sans-serif'>✅ Mietobjekt erfolgreich gespeichert!</h2>";
+  echo "<a href='vermieten.html' style='color:white;font-size:18px;'>Zurück zur Eingabe</a>";
+} else {
+  echo "<h2 style='color:red'>Ungültiger Zugriff</h2>";
 }
-
-$kategorie = htmlspecialchars($_POST['kategorie'] ?? '');
-$unterkategorie = htmlspecialchars($_POST['unterkategorie'] ?? '');
-$beschreibung = htmlspecialchars($_POST['beschreibung'] ?? '');
-$region = htmlspecialchars($_POST['region'] ?? '');
-$zeitraum = htmlspecialchars($_POST['zeitraum'] ?? '');
-$preis = htmlspecialchars($_POST['preis'] ?? '');
-$kaution = htmlspecialchars($_POST['kaution'] ?? '');
-$zusatzoptionen = htmlspecialchars($_POST['zusatzoptionen'] ?? '');
-
-if (!$kategorie || !$unterkategorie || !$beschreibung || !$region || !$zeitraum || !$preis || !$kaution) {
-    die("Pflichtfelder fehlen.");
-}
-
-$bilder = $_FILES['bilder'];
-$bildpfade = [];
-
-if (!isset($bilder['name']) || count($bilder['name']) < 3) {
-    die("Bitte lade mindestens 3 Bilder hoch.");
-}
-
-for ($i = 0; $i < count($bilder['name']); $i++) {
-    if ($bilder['error'][$i] === UPLOAD_ERR_OK) {
-        $tmp_name = $bilder['tmp_name'][$i];
-        $name = basename($bilder['name'][$i]);
-        $ziel = $upload_dir . time() . "_$i" . "_" . $name;
-        if (move_uploaded_file($tmp_name, $ziel)) {
-            $bildpfade[] = $ziel;
-        }
-    }
-}
-
-if (count($bildpfade) < 3) {
-    die("Fehler beim Hochladen der Bilder.");
-}
-
-$db->exec("CREATE TABLE IF NOT EXISTS vermietungen (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    kategorie TEXT,
-    unterkategorie TEXT,
-    beschreibung TEXT,
-    region TEXT,
-    zeitraum TEXT,
-    preis TEXT,
-    kaution TEXT,
-    zusatzoptionen TEXT,
-    bilder TEXT,
-    erstellt_am DATETIME DEFAULT CURRENT_TIMESTAMP
-)");
-
-$bilder_json = json_encode($bildpfade);
-
-$stmt = $db->prepare('INSERT INTO vermietungen (kategorie, unterkategorie, beschreibung, region, zeitraum, preis, kaution, zusatzoptionen, bilder) VALUES (:k, :uk, :b, :r, :z, :p, :kaution, :zusatz, :pics)');
-$stmt->bindValue(':k', $kategorie);
-$stmt->bindValue(':uk', $unterkategorie);
-$stmt->bindValue(':b', $beschreibung);
-$stmt->bindValue(':r', $region);
-$stmt->bindValue(':z', $zeitraum);
-$stmt->bindValue(':p', $preis);
-$stmt->bindValue(':kaution', $kaution);
-$stmt->bindValue(':zusatz', $zusatzoptionen);
-$stmt->bindValue(':pics', $bilder_json);
-$stmt->execute();
-
-echo "Erfolgreich gespeichert.";
 ?>
