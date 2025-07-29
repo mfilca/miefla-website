@@ -2,32 +2,35 @@
 session_start();
 $db = new SQLite3('objekte.db');
 
-// Objekt-ID prüfen
-if (!isset($_POST['objekt_id'])) {
-    echo "<p style='color:red;'>❌ Kein Objekt ausgewählt!</p>";
-    exit;
+if (!isset($_SESSION['nutzername'])) {
+    die("❌ Du musst eingeloggt sein, um eine Anfrage zu senden.");
 }
 
-$objekt_id = intval($_POST['objekt_id']);
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $objekt_id = intval($_POST['objekt_id']);
+    $von = $_POST['von'];
+    $bis = $_POST['bis'];
+    $mieter = $_SESSION['nutzername'];
 
-// Formular verarbeiten
-$name = htmlspecialchars($_POST['name']);
-$nachricht = htmlspecialchars($_POST['nachricht']);
-$zeit = date("Y-m-d H:i:s");
+    // Vermieter holen (aus der vermietungstabelle)
+    $stmt = $db->prepare("SELECT vermieter FROM vermietungen WHERE id = :id");
+    $stmt->bindValue(':id', $objekt_id, SQLITE3_INTEGER);
+    $result = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
+    $vermieter = $result['vermieter'];
 
-// In Datenbank speichern
-$stmt = $db->prepare("INSERT INTO anfragen (objekt_id, name, nachricht, zeitstempel) 
-                      VALUES (:objekt_id, :name, :nachricht, :zeit)");
-$stmt->bindValue(':objekt_id', $objekt_id, SQLITE3_INTEGER);
-$stmt->bindValue(':name', $name, SQLITE3_TEXT);
-$stmt->bindValue(':nachricht', $nachricht, SQLITE3_TEXT);
-$stmt->bindValue(':zeit', $zeit, SQLITE3_TEXT);
-$stmt->execute();
+    // Reservierung eintragen
+    $insert = $db->prepare("
+        INSERT INTO reservierungen (objekt_id, vermieter, mieter, von, bis, status)
+        VALUES (:objekt_id, :vermieter, :mieter, :von, :bis, 'ausstehend')
+    ");
+    $insert->bindValue(':objekt_id', $objekt_id, SQLITE3_INTEGER);
+    $insert->bindValue(':vermieter', $vermieter);
+    $insert->bindValue(':mieter', $mieter);
+    $insert->bindValue(':von', $von);
+    $insert->bindValue(':bis', $bis);
+    $insert->execute();
 
-// Ausgabe
-echo "<h2 style='color:lime;'>✅ Anfrage erfolgreich gespeichert!</h2>";
-echo "<p style='color:white;'>Angefragt von: <strong>$name</strong></p>";
-echo "<p style='color:white;'>Nachricht: $nachricht</p>";
-echo "<p style='color:white;'>Zeit: $zeit</p>";
-echo "<a href='anzeigen.php' style='color:lightblue;'>Zurück zur Übersicht</a>";
+    echo "<p style='color:lime;font-size:18px;'>✅ Deine Anfrage wurde erfolgreich gesendet!</p>";
+    echo "<a href='meine_anfragen.php' style='color:#00ff88;'>➡️ Zu deinen Anfragen</a>";
+}
 ?>
