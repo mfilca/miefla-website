@@ -1,76 +1,96 @@
 <?php
-$db = new SQLite3('mifla_vermietungen.db');
-$result = $db->query("SELECT * FROM vermietungen ORDER BY erstellt_am DESC");
+session_start();
+$db = new SQLite3('objekte.db');
+
+// Eingaben aus GET
+$region = $_GET['region'] ?? '';
+$radius = (int) ($_GET['radius'] ?? 0);
+$kategorie = $_GET['kategorie'] ?? '';
+$unterkategorie = $_GET['unterkategorie'] ?? '';
+$zweck = $_GET['zweck'] ?? '';
+$anforderungen = $_GET['anforderungen'] ?? '';
+$von = $_GET['von'] ?? '';
+$bis = $_GET['bis'] ?? '';
+
+// SQL vorbereiten
+$query = "SELECT * FROM objekte WHERE region LIKE :region";
+$params = [':region' => '%' . $region . '%'];
+
+if ($kategorie) {
+  $query .= " AND kategorie = :kat";
+  $params[':kat'] = $kategorie;
+}
+if ($unterkategorie) {
+  $query .= " AND unterkategorie = :ukat";
+  $params[':ukat'] = $unterkategorie;
+}
+if ($zweck) {
+  $query .= " AND zweck LIKE :zweck";
+  $params[':zweck'] = '%' . $zweck . '%';
+}
+if ($anforderungen) {
+  $query .= " AND anforderungen LIKE :anf";
+  $params[':anf'] = '%' . $anforderungen . '%';
+}
+
+$stmt = $db->prepare($query);
+foreach ($params as $key => $value) {
+  $stmt->bindValue($key, $value);
+}
+$res = $stmt->execute();
 ?>
+
 <!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>MiFla – Mietangebote</title>
-  <link rel="stylesheet" href="style.css">
+  <title>MiFla – Ergebnisse</title>
   <style>
     body {
-      background-color: #111;
+      background: #111;
       color: white;
       font-family: sans-serif;
+      font-size: 18px;
     }
-    h1 {
-      text-align: center;
-      margin-top: 40px;
+    .objekt {
+      border: 1px solid #333;
+      padding: 15px;
+      margin: 15px auto;
+      max-width: 700px;
+      background: #1c1c1c;
     }
-    .angebot {
-      background-color: #1c1c1c;
-      padding: 20px;
-      margin: 30px auto;
-      max-width: 800px;
-      border-radius: 10px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.6);
-    }
-    .bilder {
-      display: flex;
-      gap: 10px;
-      overflow-x: auto;
-    }
-    .bilder img {
-      height: 150px;
-      border-radius: 5px;
-      object-fit: cover;
-    }
-    .details {
-      margin-top: 15px;
-    }
-    .details p {
-      margin: 5px 0;
+    h2 {
+      color: #e60023;
     }
   </style>
 </head>
 <body>
+<?php include('nav.php'); ?>
+<h1 style="text-align:center;">Gefundene Mietobjekte</h1>
 
-<h1>🔍 Mietangebote auf MiFla</h1>
+<?php
+while ($obj = $res->fetchArray(SQLITE3_ASSOC)) {
+  echo "<div class='objekt'>";
+  echo "<h2>" . htmlspecialchars($obj['titel']) . "</h2>";
+  echo "<p><strong>Beschreibung:</strong> " . htmlspecialchars($obj['beschreibung']) . "</p>";
+  echo "<p><strong>Preis:</strong> " . htmlspecialchars($obj['preis']) . " €/Tag + 2 € Plattformgebühr</p>";
+  echo "<p><strong>Kaution:</strong> " . htmlspecialchars($obj['kaution']) . " €</p>";
+  echo "<p><strong>Region:</strong> " . htmlspecialchars($obj['region']) . "</p>";
+  echo "<p><strong>Verfügbar:</strong> " . htmlspecialchars($obj['von']) . " bis " . htmlspecialchars($obj['bis']) . "</p>";
 
-<?php while ($row = $result->fetchArray(SQLITE3_ASSOC)): ?>
-  <div class="angebot">
-    <div class="bilder">
-      <?php
-        $bilder = json_decode($row['bilder'], true);
-        foreach ($bilder as $pfad) {
-            echo "<img src='$pfad' alt='Bild'>";
-        }
-      ?>
-    </div>
-    <div class="details">
-      <p><strong>Kategorie:</strong> <?= htmlspecialchars($row['kategorie']) ?> – <?= htmlspecialchars($row['unterkategorie']) ?></p>
-      <p><strong>Region:</strong> <?= htmlspecialchars($row['region']) ?></p>
-      <p><strong>Verfügbar ab:</strong> <?= htmlspecialchars($row['zeitraum']) ?></p>
-      <p><strong>Preis:</strong> <?= htmlspecialchars($row['preis']) ?> € / Tag</p>
-      <p><strong>Kaution:</strong> <?= htmlspecialchars($row['kaution']) ?> €</p>
-      <p><strong>Beschreibung:</strong><br><?= nl2br(htmlspecialchars($row['beschreibung'])) ?></p>
-      <?php if (!empty($row['zusatzoptionen'])): ?>
-        <p><strong>Zusatzoptionen:</strong><br><?= nl2br(htmlspecialchars($row['zusatzoptionen'])) ?></p>
-      <?php endif; ?>
-    </div>
-  </div>
-<?php endwhile; ?>
+  // Reservierungsstatus anzeigen
+  if ($obj['reserviert'] == 1) {
+    echo "<p style='color:orange'><strong>Status:</strong> Reserviert</p>";
+  } else {
+    echo "<p style='color:lightgreen'><strong>Status:</strong> Verfügbar</p>";
+  }
 
+  if (!empty($obj['zusatzoptionen'])) {
+    echo "<p><strong>Zusatzoptionen:</strong> " . htmlspecialchars($obj['zusatzoptionen']) . "</p>";
+  }
+
+  echo "</div>";
+}
+?>
 </body>
 </html>
