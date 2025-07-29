@@ -2,87 +2,114 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>MiFla – Vermieten</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Vermieten – MiFla</title>
+  <style>
+    body {
+      background: #111;
+      color: white;
+      font-family: sans-serif;
+      font-size: 20px;
+      padding: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      font-size: 18px;
+    }
+    .zusatz-option {
+      border: 1px solid #444;
+      padding: 10px;
+      margin-top: 10px;
+      background: #1c1c1c;
+    }
+    button, .btn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 20px;
+      background: #e60023;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background: #ff0033;
+    }
+  </style>
 </head>
 <body>
 
-  <form action="vermieten_speichern.php" method="POST" enctype="multipart/form-data" style="max-width: 600px; margin: 50px auto;" onsubmit="return validiereBilder()">
-    <h2>Objekt vermieten</h2>
+  <h1>Objekt vermieten</h1>
 
-    <label for="kategorie">Kategorie *</label>
-    <select name="kategorie" id="kategorie" required onchange="zeigeUntermenue(this.value)">
+  <form action="vermieten_speichern.php" method="post" enctype="multipart/form-data">
+    
+    <label>Titel des Objekts*</label>
+    <input type="text" name="titel" required>
+
+    <label>Kategorie*</label>
+    <select name="kategorie" required>
       <option value="">Bitte wählen</option>
-      <option value="werkzeug">Werkzeug</option>
-      <option value="fahrzeug">Fahrzeug</option>
-      <option value="technik">Technik</option>
-      <option value="garten">Garten & Außenbereich</option>
-      <option value="veranstaltung">Event & Ausstattung</option>
-      <option value="bau">Baumaschinen</option>
-      <option value="möbel">Möbel & Einrichtung</option>
+      <option>Baumaschine</option>
+      <option>Werkzeug</option>
+      <option>Fahrzeug</option>
+      <option>Garten</option>
+      <option>Haushalt</option>
+      <option>Event</option>
+      <option>Technik</option>
+      <option>Freizeit</option>
     </select>
 
-    <div id="untermenue" style="margin-top: 10px;"></div>
+    <label>Unterkategorie*</label>
+    <input type="text" name="unterkategorie" required>
 
-    <label for="beschreibung">Beschreibung *</label>
-    <textarea name="beschreibung" id="beschreibung" required rows="4" placeholder="Beschreibe dein Objekt möglichst genau."></textarea>
+    <label>Beschreibung*</label>
+    <textarea name="beschreibung" rows="5" required></textarea>
 
-    <label for="region">Region *</label>
-    <input type="text" name="region" id="region" required placeholder="z. B. Aachen, Köln, ...">
+    <label>Preis pro Tag (€)*</label>
+    <input type="number" name="preis" required>
 
-    <label for="zeitraum">Verfügbar ab *</label>
-    <input type="date" name="zeitraum" id="zeitraum" required>
+    <label>Kaution (€)*</label>
+    <input type="number" name="kaution" required>
 
-    <label for="preis">Preis in € pro Tag *</label>
-    <input type="text" name="preis" id="preis" required>
+    <label>Verfügbar von*</label>
+    <input type="date" name="von" required>
 
-    <label for="kaution">Kaution in € *</label>
-    <input type="text" name="kaution" id="kaution" required>
+    <label>Verfügbar bis*</label>
+    <input type="date" name="bis" required>
 
-    <label for="zusatzoptionen">Zusatzoptionen (optional)</label>
-    <textarea name="zusatzoptionen" id="zusatzoptionen" rows="3" placeholder="z. B. Lieferung, Zubehör, Reinigung, Aufbauhilfe..."></textarea>
+    <label>Region (z. B. PLZ oder Ort)*</label>
+    <input type="text" name="region" required>
 
-    <label for="bilder">Fotos (mind. 3 Bilder) *</label>
-    <input type="file" name="bilder[]" id="bilder" accept="image/*" multiple required>
+    <label>Fotos hochladen (mind. 3 Bilder)*</label>
+    <input type="file" name="bilder[]" accept="image/*" multiple required>
 
-    <input type="submit" value="Objekt anbieten">
+    <h3>Zusatzoptionen (Optional)</h3>
+    <div id="zusatzoptionen"></div>
+    <button type="button" onclick="hinzufuegenOption()">➕ Option hinzufügen</button>
+
+    <br><button type="submit" class="btn">✅ Objekt einstellen</button>
   </form>
 
   <script>
-    function zeigeUntermenue(kategorie) {
-      const unterkat = {
-        werkzeug: ["Bohrmaschine", "Schleifer", "Sägen", "Akkuschrauber", "Generator"],
-        fahrzeug: ["Transporter", "Anhänger", "Quad", "Wohnmobil"],
-        technik: ["Drucker", "Beamer", "Kamera", "Soundanlage"],
-        garten: ["Rasenmäher", "Heckenschere", "Häcksler"],
-        veranstaltung: ["Partyzelte", "Lichtanlage", "Bar"],
-        bau: ["Minibagger", "Betonmischer"],
-        möbel: ["Tisch", "Stuhl", "Regal"]
-      };
+    function hinzufuegenOption() {
+      const container = document.getElementById('zusatzoptionen');
+      const box = document.createElement('div');
+      box.className = 'zusatz-option';
+      box.innerHTML = `
+        <label>Beschreibung</label>
+        <input type="text" name="zusatz_beschreibung[]" required>
 
-      let html = `
-        <label for="unterkategorie">Unterkategorie *</label>
-        <select name="unterkategorie" id="unterkategorie" required>
-          <option value="">Bitte wählen</option>
+        <label>Preis (€)</label>
+        <input type="number" name="zusatz_preis[]" min="0" required>
+
+        <label>Zusatz-Kaution (€)</label>
+        <input type="number" name="zusatz_kaution[]" min="0" required>
       `;
-
-      if (unterkat[kategorie]) {
-        unterkat[kategorie].forEach(opt => {
-          html += `<option value="${opt.toLowerCase()}">${opt}</option>`;
-        });
-      }
-
-      html += `</select>`;
-      document.getElementById('untermenue').innerHTML = html;
-    }
-
-    function validiereBilder() {
-      const files = document.getElementById('bilder').files;
-      if (files.length < 3) {
-        alert("Bitte lade mindestens 3 Bilder hoch.");
-        return false;
-      }
-      return true;
+      container.appendChild(box);
     }
   </script>
 
