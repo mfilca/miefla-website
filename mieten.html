@@ -1,64 +1,115 @@
-<form action="mieten_senden.php" method="POST" enctype="multipart/form-data">
-  <h2>Objekt mieten</h2>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>MiFla – Mieten</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-  <label for="kategorie">Kategorie *</label>
-  <select name="kategorie" id="kategorie" required onchange="zeigeUntermenü(this.value)">
-    <option value="">Bitte wählen</option>
-    <option value="werkzeug">Werkzeug</option>
-    <option value="fahrzeug">Fahrzeug</option>
-    <option value="technik">Technik</option>
-  </select>
+  <form action="mieten_senden.php" method="POST" enctype="multipart/form-data" style="max-width: 600px; margin: 50px auto;">
+    <h2>Objekt mieten</h2>
 
-  <!-- Optionales Untermenü -->
-  <div id="untermenue" style="margin-top: 10px;"></div>
+    <label for="kategorie">Kategorie *</label>
+    <select name="kategorie" id="kategorie" required onchange="zeigeUntermenue(this.value)">
+      <option value="">Bitte wählen</option>
+      <option value="werkzeug">Werkzeug</option>
+      <option value="fahrzeug">Fahrzeug</option>
+      <option value="technik">Technik</option>
+      <option value="garten">Garten & Außenbereich</option>
+      <option value="veranstaltung">Event & Ausstattung</option>
+      <option value="bau">Baumaschinen</option>
+      <option value="möbel">Möbel & Einrichtung</option>
+    </select>
 
-  <label for="zweck">Anwendungszweck *</label>
-  <input type="text" name="zweck" id="zweck" required>
+    <div id="untermenue" style="margin-top: 10px;"></div>
 
-  <label for="größe">Größe / Leistungsbereich *</label>
-  <input type="text" name="größe" id="größe" required>
+    <label for="zweck">Wofür brauchst du es? *</label>
+    <input type="text" name="zweck" id="zweck" required placeholder="z. B. Renovierung, Umzug, Gartenarbeit">
 
-  <label for="region">Region *</label>
-  <input type="text" name="region" id="region" required>
+    <label for="größe">Technische Anforderungen (optional)</label>
+    <input type="text" name="größe" id="größe" placeholder="z. B. PS, Maße, Stromanschluss">
 
-  <label for="zeitraum">Gewünschter Zeitraum *</label>
-  <input type="date" name="zeitraum" id="zeitraum" required>
+    <label for="region">Region *</label>
+    <input type="text" name="region" id="region" required placeholder="z. B. Aachen, Köln, ...">
 
-  <input type="submit" value="Mietangebote entdecken">
-</form>
+    <label for="radius">Umkreis *</label>
+    <select name="radius" id="radius" required>
+      <option value="">Bitte wählen</option>
+      <option value="10">10 km</option>
+      <option value="25">25 km</option>
+      <option value="50">50 km</option>
+      <option value="100">100 km</option>
+    </select>
 
-<script>
-  function zeigeUntermenü(kategorie) {
-    let html = '';
-    if (kategorie === 'werkzeug') {
-      html = `
-        <label for="unterkategorie">Werkzeugtyp (optional)</label>
-        <select name="unterkategorie" id="unterkategorie">
-          <option value="">-- optional --</option>
-          <option value="bohrmaschine">Bohrmaschine</option>
-          <option value="schleifer">Schleifer</option>
-          <option value="sägen">Sägen</option>
-        </select>`;
-    } else if (kategorie === 'fahrzeug') {
-      html = `
-        <label for="unterkategorie">Fahrzeugtyp (optional)</label>
-        <select name="unterkategorie" id="unterkategorie">
-          <option value="">-- optional --</option>
-          <option value="transporter">Transporter</option>
-          <option value="anhänger">Anhänger</option>
-          <option value="radlader">Radlader</option>
-        </select>`;
-    } else if (kategorie === 'technik') {
-      html = `
-        <label for="unterkategorie">Techniktyp (optional)</label>
-        <select name="unterkategorie" id="unterkategorie">
-          <option value="">-- optional --</option>
-          <option value="drucker">Drucker</option>
-          <option value="beamer">Beamer</option>
-          <option value="kamera">Kamera</option>
-        </select>`;
+    <label for="zeitraum">Gewünschter Zeitraum *</label>
+    <input type="date" name="zeitraum" id="zeitraum" required>
+
+    <input type="submit" value="Mietangebote entdecken">
+  </form>
+
+  <script>
+    function zeigeUntermenue(kategorie) {
+      let html = '';
+
+      if (kategorie === 'werkzeug') {
+        html = `
+          <label for="unterkategorie">Werkzeugtyp (optional)</label>
+          <select name="unterkategorie" id="unterkategorie">
+            <option value="">-- optional --</option>
+            <option value="bohrmaschine">Bohrmaschine</option>
+            <option value="schleifer">Schleifer</option>
+            <option value="sägen">Sägen</option>
+            <option value="akkuschrauber">Akkuschrauber</option>
+            <option value="stromgenerator">Stromgenerator</option>
+          </select>`;
+      } else if (kategorie === 'fahrzeug') {
+        html = `
+          <label for="unterkategorie">Fahrzeugtyp (optional)</label>
+          <select name="unterkategorie" id="unterkategorie">
+            <option value="">-- optional --</option>
+            <option value="transporter">Transporter</option>
+            <option value="anhänger">Anhänger</option>
+            <option value="radlader">Radlader</option>
+            <option value="quad">Quad</option>
+            <option value="wohnmobil">Wohnmobil</option>
+          </select>`;
+      } else if (kategorie === 'technik') {
+        html = `
+          <label for="unterkategorie">Techniktyp (optional)</label>
+          <select name="unterkategorie" id="unterkategorie">
+            <option value="">-- optional --</option>
+            <option value="drucker">Drucker</option>
+            <option value="beamer">Beamer</option>
+            <option value="kamera">Kamera</option>
+            <option value="soundanlage">Soundanlage</option>
+            <option value="netzwerktechnik">Netzwerktechnik</option>
+          </select>`;
+      } else if (kategorie === 'garten') {
+        html = `
+          <label for="unterkategorie">Gartengeräte (optional)</label>
+          <select name="unterkategorie" id="unterkategorie">
+            <option value="">-- optional --</option>
+            <option value="rasenmäher">Rasenmäher</option>
+            <option value="heckenschere">Heckenschere</option>
+            <option value="häcksler">Häcksler</option>
+            <option value="hochdruckreiniger">Hochdruckreiniger</option>
+          </select>`;
+      } else if (kategorie === 'veranstaltung') {
+        html = `
+          <label for="unterkategorie">Event-Ausstattung (optional)</label>
+          <select name="unterkategorie" id="unterkategorie">
+            <option value="">-- optional --</option>
+            <option value="partyzelte">Partyzelte</option>
+            <option value="bierzeltgarnitur">Bierzeltgarnitur</option>
+            <option value="lichtanlage">Lichtanlage</option>
+            <option value="bar">Mobile Bar</option>
+          </select>`;
+      }
+
+      document.getElementById('untermenue').innerHTML = html;
     }
+  </script>
 
-    document.getElementById('untermenue').innerHTML = html;
-  }
-</script>
+</body>
+</html>
