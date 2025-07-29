@@ -1,0 +1,21 @@
+<?php
+// Verbindung zur SQLite-Datenbank (Datei wird erstellt, falls nicht vorhanden)
+$db = new SQLite3('mifla_vermietungen.db');
+
+// Tabelle für Mietobjekte erstellen
+$db->exec("
+CREATE TABLE IF NOT EXISTS vermietungen (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    kategorie TEXT,
+    unterkategorie TEXT,
+    beschreibung TEXT,
+    region TEXT,
+    preis REAL,
+    kaution REAL,
+    bild TEXT, -- JSON mit Bildpfaden
+    zusatzoptionen TEXT -- JSON mit Zusatzoptionen: Text, Preis, Zusatzkaution
+)
+");
+
+echo "<p style='color:lime;'>✅ mifla_vermietungen.db & Tabelle 'vermietungen' erfolgreich erstellt!</p>";
+?>
