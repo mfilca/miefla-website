@@ -21,14 +21,24 @@ if (isset($_FILES['bild']) && $_FILES['bild']['error'] === UPLOAD_ERR_OK) {
 }
 
 // Formulardaten absichern und einlesen
-$kategorie    = htmlspecialchars($_POST['kategorie'] ?? '');
+$kategorie   = htmlspecialchars($_POST['kategorie'] ?? '');
 $beschreibung = htmlspecialchars($_POST['beschreibung'] ?? '');
-$region       = htmlspecialchars($_POST['region'] ?? '');
-$zeitraum     = htmlspecialchars($_POST['zeitraum'] ?? '');
-$preis        = htmlspecialchars($_POST['preis'] ?? '');
+$region      = htmlspecialchars($_POST['region'] ?? '');
+$zeitraum    = htmlspecialchars($_POST['zeitraum'] ?? '');
+$preis       = htmlspecialchars($_POST['preis'] ?? '');
+
+// Pflichtfeldprüfung
+if (!$kategorie || !$beschreibung || !$region || !$zeitraum || !$preis) {
+    echo "<body style='background-color:#111; color:white; font-family:sans-serif; text-align:center; padding-top:50px;'>
+            <h2 style='color:orange;'>Bitte fülle alle Felder aus!</h2>
+            <a href='vermieten.html' style='color:white;'>Zurück zum Formular</a>
+          </body>";
+    exit;
+}
 
 // SQL einfügen
-$stmt = $db->prepare('INSERT INTO vermietungen (kategorie, beschreibung, region, zeitraum, preis, bildpfad) VALUES (:kat, :beschr, :reg, :zeit, :preis, :bild)');
+$stmt = $db->prepare('INSERT INTO vermietungen (kategorie, beschreibung, region, zeitraum, preis, bild) 
+                      VALUES (:kat, :beschr, :reg, :zeit, :preis, :bild)');
 $stmt->bindValue(':kat', $kategorie);
 $stmt->bindValue(':beschr', $beschreibung);
 $stmt->bindValue(':reg', $region);
@@ -38,10 +48,14 @@ $stmt->bindValue(':bild', $bildpfad);
 
 $result = $stmt->execute();
 
-// Erfolg oder Fehler anzeigen
+// Weiterleitung oder Fehlermeldung
 if ($result) {
-    echo "<h2 style='color: lime;'>Danke! Dein Objekt wurde gespeichert.</h2>";
+    header("Location: danke.html");
+    exit;
 } else {
-    echo "<h2 style='color: red;'>Fehler beim Speichern.</h2>";
+    echo "<body style='background-color:#111; color:white; font-family:sans-serif; text-align:center; padding-top:50px;'>
+            <h2 style='color:red;'>Fehler beim Speichern!</h2>
+            <a href='vermieten.html' style='color:white;'>Zurück zum Formular</a>
+          </body>";
 }
 ?>
