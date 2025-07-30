@@ -42,7 +42,7 @@ $result = $stmt->get_result();
 }
 .pay-button:hover {
     background: linear-gradient(45deg, #009973, #007f66);
-}>
+}
         body {
             background-color: #121212;
             color: #f1f1f1;
