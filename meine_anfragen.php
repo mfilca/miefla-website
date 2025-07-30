@@ -1,90 +1,95 @@
 <?php
 session_start();
-$db = new SQLite3('objekte.db');
+include 'db_verbindung.php'; // Verbindung zur Datenbank
 
-if (!isset($_SESSION['nutzername'])) {
-    header("Location: login.html");
-    exit;
+// Nur eingeloggte Mieter dürfen zugreifen
+if (!isset($_SESSION['user_id'])) {
+  header("Location: login.html");
+  exit();
 }
 
-$mieter = $_SESSION['nutzername'];
+$user_id = $_SESSION['user_id'];
 
-$anfragen = $db->prepare("
-    SELECT r.*, v.titel, v.region
-    FROM reservierungen r
-    LEFT JOIN vermietungen v ON r.objekt_id = v.id
-    WHERE r.mieter = :mieter
-    ORDER BY r.erstellt_am DESC
-");
-$anfragen->bindValue(':mieter', $mieter);
-$ergebnisse = $anfragen->execute();
+// Abfrage der Anfragen dieses Nutzers
+$sql = "SELECT a.id, a.status, a.anfrage_datum, m.titel, m.bild_url, m.kaution, m.preis_pro_tag
+        FROM anfragen a
+        JOIN mietobjekte m ON a.mietobjekt_id = m.id
+        WHERE a.mieter_id = ? ORDER BY a.anfrage_datum DESC";
+
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
 ?>
 
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <title>Meine Anfragen – MiFla</title>
-    <style>
-        body {
-            background-color: #111;
-            color: white;
-            font-family: Arial, sans-serif;
-            padding: 20px;
-        }
-        h1 {
-            color: #00ff88;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            background: #222;
-        }
-        th, td {
-            padding: 12px;
-            border: 1px solid #444;
-            text-align: left;
-        }
-        th {
-            background: #333;
-        }
-        .status-bestätigt {
-            color: lime;
-        }
-        .status-ausstehend {
-            color: orange;
-        }
-        .status-storniert {
-            color: red;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>Meine Anfragen – MiFla</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: #f1f1f1;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .anfrage {
+      background: #1f1f1f;
+      border: 1px solid #333;
+      margin-bottom: 20px;
+      padding: 15px;
+      border-radius: 8px;
+    }
+    .anfrage img {
+      width: 100px;
+      height: auto;
+      border-radius: 4px;
+    }
+    .anfrage h3 {
+      margin: 0;
+    }
+    .status {
+      margin-top: 8px;
+      font-weight: bold;
+    }
+    .status.offen { color: orange; }
+    .status.bestätigt { color: lightgreen; }
+    .status.abgelehnt { color: crimson; }
+    a.pdf-link {
+      color: #ffcc00;
+      text-decoration: underline;
+      display: inline-block;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
+  <h1>Meine Anfragen</h1>
 
-<h1>📋 Meine Anfragen</h1>
+  <?php
+  if ($result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+      echo "<div class='anfrage'>";
+      echo "<img src='" . htmlspecialchars($row['bild_url']) . "' alt='Objektbild'><br>";
+      echo "<h3>" . htmlspecialchars($row['titel']) . "</h3>";
+      echo "<p><strong>Angefragt am:</strong> " . htmlspecialchars($row['anfrage_datum']) . "</p>";
+      echo "<p><strong>Kaution:</strong> " . htmlspecialchars($row['kaution']) . " €<br>";
+      echo "<strong>Preis/Tag:</strong> " . htmlspecialchars($row['preis_pro_tag']) . " €</p>";
+      echo "<div class='status " . strtolower($row['status']) . "'>Status: " . ucfirst($row['status']) . "</div>";
+      
+      if ($row['status'] === 'bestätigt') {
+        echo "<a class='pdf-link' href='rechnung.php?anfrage_id=" . $row['id'] . "' target='_blank'>PDF-Rechnung herunterladen</a>";
+      }
 
-<table>
-    <tr>
-        <th>Objekt</th>
-        <th>Region</th>
-        <th>Zeitraum</th>
-        <th>Status</th>
-        <th>Gesendet am</th>
-    </tr>
+      echo "</div>";
+    }
+  } else {
+    echo "<p>Du hast bisher keine Anfragen gestellt.</p>";
+  }
 
-    <?php while ($a = $ergebnisse->fetchArray(SQLITE3_ASSOC)): ?>
-    <tr>
-        <td><?= htmlspecialchars($a['titel']) ?></td>
-        <td><?= htmlspecialchars($a['region']) ?></td>
-        <td><?= $a['von'] ?> – <?= $a['bis'] ?></td>
-        <td class="status-<?= strtolower($a['status']) ?>">
-            <?= ucfirst($a['status']) ?>
-        </td>
-        <td><?= $a['erstellt_am'] ?></td>
-    </tr>
-    <?php endwhile; ?>
-</table>
-
+  $stmt->close();
+  $conn->close();
+  ?>
 </body>
 </html>
