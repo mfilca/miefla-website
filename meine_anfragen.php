@@ -27,7 +27,22 @@ $result = $stmt->get_result();
 <head>
     <meta charset="UTF-8">
     <title>Meine Anfragen – MiFla</title>
-    <style>
+    <.pay-button {
+    background: linear-gradient(45deg, #00cc99, #009973);
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    margin-top: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: background 0.3s ease;
+}
+.pay-button:hover {
+    background: linear-gradient(45deg, #009973, #007f66);
+}>
         body {
             background-color: #121212;
             color: #f1f1f1;
