@@ -1,60 +1,66 @@
 <?php
 session_start();
-$db = new SQLite3('objekte.db');
+include 'db_verbindung.php';
 
-// Alle Objekte laden
-$res = $db->query("SELECT * FROM objekte ORDER BY id DESC");
+if (!isset($_SESSION['user_id'])) {
+  header("Location: login.html");
+  exit();
+}
+
+$vermieter_id = $_SESSION['user_id'];
+
+// Anfragen für Objekte dieses Vermieters
+$sql = "SELECT a.id, a.status, a.anfrage_datum, m.titel, u.vorname, u.nachname
+        FROM anfragen a
+        JOIN mietobjekte m ON a.mietobjekt_id = m.id
+        JOIN nutzer u ON a.mieter_id = u.id
+        WHERE m.vermieter_id = ?
+        ORDER BY a.anfrage_datum DESC";
+
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $vermieter_id);
+$stmt->execute();
+$result = $stmt->get_result();
 ?>
 
 <!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>Vermieter-Dashboard – MiFla</title>
+  <title>Erhaltene Anfragen – MiFla</title>
   <style>
-    body {
-      background: #111;
-      color: white;
-      font-family: sans-serif;
-      font-size: 18px;
-    }
-    .objekt {
-      border: 1px solid #444;
-      padding: 15px;
-      margin: 15px auto;
-      max-width: 700px;
-      background: #1e1e1e;
-    }
-    h2 {
-      color: #e60023;
-    }
-    a {
-      color: #00aaff;
-      margin-right: 10px;
-    }
+    body { background-color: #121212; color: #f1f1f1; font-family: Arial, sans-serif; padding: 20px; }
+    .anfrage { background: #1f1f1f; border: 1px solid #333; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+    a.link { color: #ffcc00; text-decoration: underline; }
   </style>
 </head>
 <body>
-  <h1 style="text-align:center;">Vermieter-Dashboard</h1>
 
-  <?php
-  while ($obj = $res->fetchArray(SQLITE3_ASSOC)) {
-    echo "<div class='objekt'>";
-    echo "<h2>" . htmlspecialchars($obj['titel']) . "</h2>";
-    echo "<p><strong>ID:</strong> " . $obj['id'] . "</p>";
-    echo "<p><strong>Status:</strong> " . ($obj['reserviert'] ? "<span style='color:orange'>Reserviert</span>" : "<span style='color:lightgreen'>Frei</span>") . "</p>";
-    echo "<p><strong>Verfügbar:</strong> " . $obj['von'] . " bis " . $obj['bis'] . "</p>";
+<h1>Erhaltene Anfragen</h1>
 
-    // Links zur Statusänderung
-    if ($obj['reserviert']) {
-      echo "<a href='freigeben.php?id=" . $obj['id'] . "'>✅ Freigeben</a>";
-    } else {
-      echo "<a href='reservieren.php?id=" . $obj['id'] . "'>🔒 Reservieren</a>";
+<?php
+if ($result->num_rows > 0) {
+  while ($row = $result->fetch_assoc()) {
+    echo "<div class='anfrage'>";
+    echo "<p><strong>Mietobjekt:</strong> " . htmlspecialchars($row['titel']) . "</p>";
+    echo "<p><strong>Anfrage von:</strong> " . htmlspecialchars($row['vorname'] . " " . $row['nachname']) . "</p>";
+    echo "<p><strong>Datum:</strong> " . htmlspecialchars($row['anfrage_datum']) . "</p>";
+    echo "<p><strong>Status:</strong> " . ucfirst($row['status']) . "</p>";
+
+    // Quittung nur zeigen, wenn Anfrage bestätigt ist
+    if (strtolower($row['status']) === 'bestätigt') {
+      echo "<p><a class='link' href='quittung.php?anfrage_id=" . $row['id'] . "' target='_blank'>Quittung anzeigen</a></p>";
     }
 
-    echo "<a href='anzeigen.php?id=" . $obj['id'] . "'>🔍 Anzeigen</a>";
     echo "</div>";
   }
-  ?>
+} else {
+  echo "<p>Keine Anfragen vorhanden.</p>";
+}
+
+$stmt->close();
+$conn->close();
+?>
+
 </body>
 </html>
